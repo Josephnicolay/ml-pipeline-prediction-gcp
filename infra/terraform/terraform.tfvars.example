@@ -1,0 +1,25 @@
+projects = {
+  source = {
+    project_id = "your-ml-pipeline-source-123"
+    name       = "ML Pipeline Source"
+  }
+  process = {
+    project_id = "your-ml-pipeline-process-123"
+    name       = "ML Pipeline Process"
+  }
+  production = {
+    project_id = "your-ml-pipeline-prod-123"
+    name       = "ML Pipeline Production"
+  }
+}
+
+parent = {
+  organization_id = "123456789012"
+  # Alternatively, use folder_id = "123456789012" instead.
+}
+
+billing_account_id = "000000-000000-000000"
+
+region = "US"
+
+pipeline_service_account_email = "pipeline-runner@your-ml-pipeline-process-123.iam.gserviceaccount.com"
