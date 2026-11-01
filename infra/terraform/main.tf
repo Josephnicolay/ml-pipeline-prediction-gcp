@@ -44,8 +44,13 @@ locals {
     production = "bq_housing_prod"
   }
 
-  pipeline_sa_enabled = var.pipeline_service_account_email != ""
-  pipeline_sa_member  = "serviceAccount:${var.pipeline_service_account_email}"
+  pipeline_sa_enabled      = var.pipeline_service_account_email != ""
+  cloud_run_sa_enabled     = var.cloud_run_service_account_email != ""
+  launcher_bindings_enabled = local.pipeline_sa_enabled && local.cloud_run_sa_enabled
+
+  pipeline_sa_member      = "serviceAccount:${var.pipeline_service_account_email}"
+  cloud_run_sa_member     = "serviceAccount:${var.cloud_run_service_account_email}"
+  pipeline_sa_project_id  = split(".", split("@", var.pipeline_service_account_email)[1])[0]
 }
 
 resource "google_project_service" "services" {
@@ -117,6 +122,30 @@ resource "google_storage_bucket_iam_member" "process_artifacts_read_access" {
   bucket = google_storage_bucket.process_artifacts.name
   role   = "roles/storage.objectViewer"
   member = local.pipeline_sa_member
+}
+
+resource "google_project_iam_member" "cloud_run_vertex_ai_submit_access" {
+  count = local.cloud_run_sa_enabled ? 1 : 0
+
+  project = google_project.projects["process"].project_id
+  role    = "roles/aiplatform.user"
+  member  = local.cloud_run_sa_member
+}
+
+resource "google_storage_bucket_iam_member" "cloud_run_artifacts_read_access" {
+  count = local.cloud_run_sa_enabled ? 1 : 0
+
+  bucket = google_storage_bucket.process_artifacts.name
+  role   = "roles/storage.objectViewer"
+  member = local.cloud_run_sa_member
+}
+
+resource "google_service_account_iam_member" "cloud_run_can_use_pipeline_sa" {
+  count = local.launcher_bindings_enabled ? 1 : 0
+
+  service_account_id = "projects/${local.pipeline_sa_project_id}/serviceAccounts/${var.pipeline_service_account_email}"
+  role               = "roles/iam.serviceAccountUser"
+  member             = local.cloud_run_sa_member
 }
 
 output "project_ids" {

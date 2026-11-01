@@ -42,3 +42,9 @@ variable "pipeline_service_account_email" {
   type        = string
   default     = ""
 }
+
+variable "cloud_run_service_account_email" {
+  description = "Service account email used by the Cloud Run Job launcher. Leave empty to skip launcher IAM bindings."
+  type        = string
+  default     = ""
+}

@@ -41,6 +41,9 @@ The projects separate data ingestion, processing, and production responsibilitie
 *Pipeline service account:*
 - Terraform grants the configured service account the permissions listed below. The account itself is not created by this configuration.
 
+*Cloud Run launcher service account:*
+- Terraform can grant the launcher account permissions to submit Vertex AI pipeline jobs, read pipeline templates from the artifacts bucket, and use the pipeline service account.
+
 ## Infrastructure Setup (Terraform)
 
 ### Step by step
@@ -87,3 +90,12 @@ terraform apply tfplan
 - In `process`: `roles/bigquery.dataEditor`, `roles/bigquery.jobUser`
 - In `production`: `roles/bigquery.dataEditor`
 - On artifacts bucket: `roles/storage.objectViewer`
+
+### Permissions (Cloud Run launcher service account)
+- In `process`: `roles/aiplatform.user`
+- On artifacts bucket: `roles/storage.objectViewer`
+- On pipeline service account: `roles/iam.serviceAccountUser`
+
+Configure both in `terraform.tfvars`:
+- `pipeline_service_account_email`
+- `cloud_run_service_account_email`

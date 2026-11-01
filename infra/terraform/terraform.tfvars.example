@@ -23,3 +23,4 @@ billing_account_id = "000000-000000-000000"
 region = "US"
 
 pipeline_service_account_email = "pipeline-runner@your-ml-pipeline-process-123.iam.gserviceaccount.com"
+cloud_run_service_account_email = "cloud-run-sa@your-ml-pipeline-process-123.iam.gserviceaccount.com"
