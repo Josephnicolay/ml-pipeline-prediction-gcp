@@ -20,6 +20,7 @@ locals {
       "run.googleapis.com",
       "cloudscheduler.googleapis.com",
       "aiplatform.googleapis.com",
+      "cloudbuild.googleapis.com",
     ]
     production = [
       "bigquery.googleapis.com",
