@@ -47,13 +47,34 @@ locals {
     production = "bq_housing_prod"
   }
 
-  pipeline_sa_enabled       = var.pipeline_service_account_email != ""
-  cloud_run_sa_enabled      = var.cloud_run_service_account_email != ""
-  launcher_bindings_enabled = local.pipeline_sa_enabled && local.cloud_run_sa_enabled
+  pipeline_sa_account_id  = var.pipeline_service_account_email != "" ? split("@", var.pipeline_service_account_email)[0] : var.pipeline_service_account_id
+  cloud_run_sa_account_id = var.cloud_run_service_account_email != "" ? split("@", var.cloud_run_service_account_email)[0] : var.cloud_run_service_account_id
 
-  pipeline_sa_member     = "serviceAccount:${var.pipeline_service_account_email}"
-  cloud_run_sa_member    = "serviceAccount:${var.cloud_run_service_account_email}"
-  pipeline_sa_project_id = split(".", split("@", var.pipeline_service_account_email)[1])[0]
+  pipeline_sa_email       = google_service_account.pipeline_runner.email
+  cloud_run_sa_email      = google_service_account.cloud_run_launcher.email
+
+  pipeline_sa_enabled       = true
+  cloud_run_sa_enabled      = true
+  launcher_bindings_enabled = true
+
+  pipeline_sa_member     = "serviceAccount:${local.pipeline_sa_email}"
+  cloud_run_sa_member    = "serviceAccount:${local.cloud_run_sa_email}"
+}
+
+resource "google_service_account" "pipeline_runner" {
+  project      = google_project.projects["process"].project_id
+  account_id   = local.pipeline_sa_account_id
+  display_name = var.pipeline_service_account_display_name
+
+  create_ignore_already_exists = true
+}
+
+resource "google_service_account" "cloud_run_launcher" {
+  project      = google_project.projects["process"].project_id
+  account_id   = local.cloud_run_sa_account_id
+  display_name = var.cloud_run_service_account_display_name
+
+  create_ignore_already_exists = true
 }
 
 resource "google_project_service" "services" {
@@ -197,7 +218,7 @@ resource "google_storage_bucket_iam_member" "cloud_run_artifacts_read_access" {
 resource "google_service_account_iam_member" "cloud_run_can_use_pipeline_sa" {
   count = local.launcher_bindings_enabled ? 1 : 0
 
-  service_account_id = "projects/${local.pipeline_sa_project_id}/serviceAccounts/${var.pipeline_service_account_email}"
+  service_account_id = google_service_account.pipeline_runner.name
   role               = "roles/iam.serviceAccountUser"
   member             = local.cloud_run_sa_member
 }

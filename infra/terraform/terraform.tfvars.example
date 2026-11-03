@@ -22,8 +22,14 @@ billing_account_id = "000000-000000-000000"
 
 region = "US"
 
-pipeline_service_account_email = "pipeline-runner@your-ml-pipeline-process-123.iam.gserviceaccount.com"
-cloud_run_service_account_email = "cloud-run-sa@your-ml-pipeline-process-123.iam.gserviceaccount.com"
+pipeline_service_account_email = ""
+cloud_run_service_account_email = ""
+
+pipeline_service_account_id = "pipeline-runner"
+pipeline_service_account_display_name = "Pipeline Runner"
+
+cloud_run_service_account_id = "cloud-run"
+cloud_run_service_account_display_name = "Cloud Run Launcher"
 
 artifact_registry_repository_id = "test"
 artifact_registry_location = "us-central1"

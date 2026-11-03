@@ -38,15 +38,39 @@ variable "region" {
 }
 
 variable "pipeline_service_account_email" {
-  description = "Service account email used by the pipeline runtime. Leave empty to skip IAM bindings."
+  description = "Pipeline runtime service account email in process project. If set and missing, Terraform creates it; if it exists, Terraform reuses it."
   type        = string
   default     = ""
 }
 
 variable "cloud_run_service_account_email" {
-  description = "Service account email used by the Cloud Run Job launcher. Leave empty to skip launcher IAM bindings."
+  description = "Cloud Run launcher service account email in process project. If set and missing, Terraform creates it; if it exists, Terraform reuses it."
   type        = string
   default     = ""
+}
+
+variable "pipeline_service_account_id" {
+  description = "Fallback account ID for the pipeline runtime service account in process project when pipeline_service_account_email is empty."
+  type        = string
+  default     = "pipeline-runner"
+}
+
+variable "pipeline_service_account_display_name" {
+  description = "Display name for the pipeline runtime service account created by Terraform."
+  type        = string
+  default     = "Pipeline Runner"
+}
+
+variable "cloud_run_service_account_id" {
+  description = "Fallback account ID for the Cloud Run launcher service account in process project when cloud_run_service_account_email is empty."
+  type        = string
+  default     = "cloud-run"
+}
+
+variable "cloud_run_service_account_display_name" {
+  description = "Display name for the Cloud Run launcher service account created by Terraform."
+  type        = string
+  default     = "Cloud Run Launcher"
 }
 
 variable "artifact_registry_repository_id" {

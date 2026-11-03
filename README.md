@@ -39,10 +39,12 @@ The projects separate data ingestion, processing, and production responsibilitie
 - Will trigger the Vertex AI pipeline and Cloud Run Job at specified intervals.
 
 *Pipeline service account:*
-- Terraform grants the configured service account the permissions listed below. The account itself is not created by this configuration.
+- Terraform manages this service account in the `process` project and grants the permissions listed below.
+- If you provide an email in `terraform.tfvars` and it does not exist yet, Terraform creates it; if it already exists, Terraform reuses it.
 
 *Cloud Run launcher service account:*
-- Terraform can grant the launcher account permissions to submit Vertex AI pipeline jobs, read pipeline templates from the artifacts bucket, and use the pipeline service account.
+- Terraform manages this service account in the `process` project and grants permissions to submit Vertex AI pipeline jobs, read pipeline templates from the artifacts bucket, and use the pipeline service account.
+- If you provide an email in `terraform.tfvars` and it does not exist yet, Terraform creates it; if it already exists, Terraform reuses it.
 
 ## Infrastructure Setup (Terraform)
 
@@ -118,9 +120,13 @@ terraform apply tfplan
 	- `roles/iam.serviceAccountUser`
 
 Notes:
-- IAM bindings are created only when service account emails are provided.
-- This Terraform configuration does not create service accounts; it only grants IAM roles.
+- Service accounts are managed in the `process` project.
+- You can provide service account emails or fallback account IDs; in both cases Terraform ensures accounts exist and then applies IAM bindings.
 
-Configure these in `terraform.tfvars` (leave empty to skip related IAM bindings):
+Configure these in `terraform.tfvars`:
 - `pipeline_service_account_email`
 - `cloud_run_service_account_email`
+- `pipeline_service_account_id`
+- `pipeline_service_account_display_name`
+- `cloud_run_service_account_id`
+- `cloud_run_service_account_display_name`
