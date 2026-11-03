@@ -124,9 +124,17 @@ Notes:
 - You can provide service account emails or fallback account IDs; in both cases Terraform ensures accounts exist and then applies IAM bindings.
 
 Configure these in `terraform.tfvars`:
-- `pipeline_service_account_email`
-- `cloud_run_service_account_email`
+
 - `pipeline_service_account_id`
 - `pipeline_service_account_display_name`
 - `cloud_run_service_account_id`
 - `cloud_run_service_account_display_name`
+
+or set the service account emails directly:
+
+- `pipeline_service_account_email`
+- `cloud_run_service_account_email`
+
+Notes:
+- If both the service account email and fallback account ID are provided, Terraform will prioritize the email. Ensure that the email correspond to `<process-project-id>` service accounts, since Terraform manages them in the `process` project.
+
