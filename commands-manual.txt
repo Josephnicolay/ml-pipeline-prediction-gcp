@@ -13,7 +13,7 @@ gcloud builds submit --tag us-central1-docker.pkg.dev/<process-project-id>/<clou
 gcloud run jobs deploy house-price-pipeline-job \
           --image us-central1-docker.pkg.dev/<process-project-id>/<cloud-run-repo>/pipeline-job-runner \
           --region us-central1 \
-          --service-account cloud-run@<process-project-id>.iam.gserviceaccount.com \
+          --service-account <cloud-run-service-account>@<process-project-id>.iam.gserviceaccount.com \
           --env-vars-file .env \
           --quiet
 
@@ -31,5 +31,5 @@ gcloud scheduler jobs create http house-price-pipeline-job \
   --time-zone "America/Lima" \
   --uri "https://run.googleapis.com/v2/projects/<process-project-id>/locations/us-central1/jobs/house-price-pipeline-job:run" \
   --http-method POST \
-  --oauth-service-account-email cloud-run@<process-project-id>.iam.gserviceaccount.com \
+  --oauth-service-account-email <cloud-run-service-account>@<process-project-id>.iam.gserviceaccount.com \
   --oauth-token-scope "https://www.googleapis.com/auth/cloud-platform"
