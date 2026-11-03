@@ -16,11 +16,13 @@ locals {
     ]
     process = [
       "bigquery.googleapis.com",
+      "bigquerystorage.googleapis.com",
       "storage.googleapis.com",
       "run.googleapis.com",
       "cloudscheduler.googleapis.com",
       "aiplatform.googleapis.com",
       "cloudbuild.googleapis.com",
+      "artifactregistry.googleapis.com",
     ]
     production = [
       "bigquery.googleapis.com",
@@ -45,13 +47,13 @@ locals {
     production = "bq_housing_prod"
   }
 
-  pipeline_sa_enabled      = var.pipeline_service_account_email != ""
-  cloud_run_sa_enabled     = var.cloud_run_service_account_email != ""
+  pipeline_sa_enabled       = var.pipeline_service_account_email != ""
+  cloud_run_sa_enabled      = var.cloud_run_service_account_email != ""
   launcher_bindings_enabled = local.pipeline_sa_enabled && local.cloud_run_sa_enabled
 
-  pipeline_sa_member      = "serviceAccount:${var.pipeline_service_account_email}"
-  cloud_run_sa_member     = "serviceAccount:${var.cloud_run_service_account_email}"
-  pipeline_sa_project_id  = split(".", split("@", var.pipeline_service_account_email)[1])[0]
+  pipeline_sa_member     = "serviceAccount:${var.pipeline_service_account_email}"
+  cloud_run_sa_member    = "serviceAccount:${var.cloud_run_service_account_email}"
+  pipeline_sa_project_id = split(".", split("@", var.pipeline_service_account_email)[1])[0]
 }
 
 resource "google_project_service" "services" {
@@ -72,12 +74,31 @@ resource "google_bigquery_dataset" "datasets" {
   depends_on = [google_project_service.services]
 }
 
+resource "google_bigquery_table" "source_input_table" {
+  project    = google_bigquery_dataset.datasets["source"].project
+  dataset_id = google_bigquery_dataset.datasets["source"].dataset_id
+  table_id   = var.source_input_table_id
+  schema     = file("${path.module}/schemas/input_table_schema.json")
+
+  depends_on = [google_bigquery_dataset.datasets]
+}
+
 resource "google_storage_bucket" "process_artifacts" {
   project = google_project.projects["process"].project_id
   name    = "${google_project.projects["process"].project_id}-artifacts"
 
   location                    = var.region
   uniform_bucket_level_access = true
+
+  depends_on = [google_project_service.services]
+}
+
+resource "google_artifact_registry_repository" "process_images" {
+  project       = google_project.projects["process"].project_id
+  location      = var.artifact_registry_location
+  repository_id = var.artifact_registry_repository_id
+  description   = "Docker images for process workloads"
+  format        = "DOCKER"
 
   depends_on = [google_project_service.services]
 }
@@ -117,11 +138,43 @@ resource "google_project_iam_member" "process_query_job_access" {
   member  = local.pipeline_sa_member
 }
 
+resource "google_project_iam_member" "production_query_job_access" {
+  count = local.pipeline_sa_enabled ? 1 : 0
+
+  project = google_project.projects["production"].project_id
+  role    = "roles/bigquery.jobUser"
+  member  = local.pipeline_sa_member
+}
+
+resource "google_project_iam_member" "process_read_session_access" {
+  count = local.pipeline_sa_enabled ? 1 : 0
+
+  project = google_project.projects["process"].project_id
+  role    = "roles/bigquery.readSessionUser"
+  member  = local.pipeline_sa_member
+}
+
+resource "google_project_iam_member" "pipeline_vertex_ai_submit_access" {
+  count = local.pipeline_sa_enabled ? 1 : 0
+
+  project = google_project.projects["process"].project_id
+  role    = "roles/aiplatform.user"
+  member  = local.pipeline_sa_member
+}
+
 resource "google_storage_bucket_iam_member" "process_artifacts_read_access" {
   count = local.pipeline_sa_enabled ? 1 : 0
 
   bucket = google_storage_bucket.process_artifacts.name
   role   = "roles/storage.objectViewer"
+  member = local.pipeline_sa_member
+}
+
+resource "google_storage_bucket_iam_member" "process_artifacts_write_access" {
+  count = local.pipeline_sa_enabled ? 1 : 0
+
+  bucket = google_storage_bucket.process_artifacts.name
+  role   = "roles/storage.objectCreator"
   member = local.pipeline_sa_member
 }
 

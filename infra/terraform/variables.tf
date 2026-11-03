@@ -48,3 +48,21 @@ variable "cloud_run_service_account_email" {
   type        = string
   default     = ""
 }
+
+variable "artifact_registry_repository_id" {
+  description = "Artifact Registry Docker repository ID for process images."
+  type        = string
+  default     = "test"
+}
+
+variable "artifact_registry_location" {
+  description = "Artifact Registry location for process images (for example: us-central1)."
+  type        = string
+  default     = "us-central1"
+}
+
+variable "source_input_table_id" {
+  description = "Input table ID to create in the source BigQuery dataset."
+  type        = string
+  default     = "input_table"
+}

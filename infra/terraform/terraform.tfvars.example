@@ -24,3 +24,6 @@ region = "US"
 
 pipeline_service_account_email = "pipeline-runner@your-ml-pipeline-process-123.iam.gserviceaccount.com"
 cloud_run_service_account_email = "cloud-run-sa@your-ml-pipeline-process-123.iam.gserviceaccount.com"
+
+artifact_registry_repository_id = "test"
+artifact_registry_location = "us-central1"
