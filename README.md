@@ -138,3 +138,48 @@ or set the service account emails directly:
 Notes:
 - If both the service account email and fallback account ID are provided, Terraform will prioritize the email. Ensure that the email correspond to `<process-project-id>` service accounts, since Terraform manages them in the `process` project.
 
+## Project Execution
+
+After Terraform provisioning, execute the runtime workflow (data load, pipeline compilation, image build, job deploy, test run, and scheduler setup).
+
+### Recommended: Makefile + scripts
+
+1. Copy deploy variables template:
+```bash
+cp .env.deploy.example .env.deploy
+```
+2. Edit `.env.deploy` with your values.
+3. Ensure your job env file exists (default: `.env`) with required runtime variables.
+```bash
+cp .env.example .env
+```
+4. Run all steps:
+```bash
+make all
+```
+
+Available stages:
+
+- `make data`
+- `make pipeline`
+- `make image`
+- `make job`
+- `make test`
+- `make schedule`
+
+Use a custom deploy file if needed:
+```bash
+ENV_FILE=/path/to/.env.deploy make all
+```
+
+### Manual alternative
+
+If you prefer direct commands, see `commands-manual.txt` and execute in this order:
+
+1. Load initial data to BigQuery.
+2. Compile and upload pipeline JSON to GCS.
+3. Build container image.
+4. Deploy Cloud Run Job.
+5. Execute a test run.
+6. Create or update Cloud Scheduler.
+
