@@ -22,3 +22,19 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+
+# Python cache and environment files
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Environment files
+.env

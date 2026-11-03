@@ -1,0 +1,525 @@
+{
+  "pipelineSpec": {
+    "components": {
+      "comp-condition-execute-3": {
+        "dag": {
+          "tasks": {
+            "prediction": {
+              "cachingOptions": {
+                "enableCache": true
+              },
+              "componentRef": {
+                "name": "comp-prediction"
+              },
+              "dependentTasks": [
+                "process-data"
+              ],
+              "inputs": {
+                "artifacts": {
+                  "features_table": {
+                    "taskOutputArtifact": {
+                      "outputArtifactKey": "features_table",
+                      "producerTask": "process-data"
+                    }
+                  }
+                },
+                "parameters": {
+                  "output_table_id": {
+                    "componentInputParameter": "pipelineparam--output_table_id"
+                  },
+                  "path_model": {
+                    "componentInputParameter": "pipelineparam--path_model"
+                  },
+                  "project": {
+                    "componentInputParameter": "pipelineparam--project"
+                  }
+                }
+              },
+              "taskInfo": {
+                "name": "MODEL_PREDICTION"
+              }
+            },
+            "process-data": {
+              "cachingOptions": {
+                "enableCache": true
+              },
+              "componentRef": {
+                "name": "comp-process-data"
+              },
+              "inputs": {
+                "parameters": {
+                  "features_table_id": {
+                    "componentInputParameter": "pipelineparam--features_table_id"
+                  },
+                  "input_table_id": {
+                    "componentInputParameter": "pipelineparam--input_table_id"
+                  },
+                  "project": {
+                    "componentInputParameter": "pipelineparam--project"
+                  }
+                }
+              },
+              "taskInfo": {
+                "name": "PROCESS_DATA"
+              }
+            }
+          }
+        },
+        "inputDefinitions": {
+          "parameters": {
+            "pipelineparam--features_table_id": {
+              "type": "STRING"
+            },
+            "pipelineparam--input_table_id": {
+              "type": "STRING"
+            },
+            "pipelineparam--output_table_id": {
+              "type": "STRING"
+            },
+            "pipelineparam--path_model": {
+              "type": "STRING"
+            },
+            "pipelineparam--project": {
+              "type": "STRING"
+            },
+            "pipelineparam--validate-data-condition": {
+              "type": "STRING"
+            }
+          }
+        }
+      },
+      "comp-condition-no-execute-2": {
+        "dag": {
+          "tasks": {
+            "error": {
+              "cachingOptions": {
+                "enableCache": true
+              },
+              "componentRef": {
+                "name": "comp-error"
+              },
+              "inputs": {
+                "parameters": {
+                  "msg": {
+                    "runtimeValue": {
+                      "constantValue": {
+                        "stringValue": "Not able to validate input table."
+                      }
+                    }
+                  }
+                }
+              },
+              "taskInfo": {
+                "name": "error"
+              }
+            }
+          }
+        },
+        "inputDefinitions": {
+          "parameters": {
+            "pipelineparam--validate-data-condition": {
+              "type": "STRING"
+            }
+          }
+        }
+      },
+      "comp-error": {
+        "executorLabel": "exec-error",
+        "inputDefinitions": {
+          "parameters": {
+            "msg": {
+              "type": "STRING"
+            }
+          }
+        }
+      },
+      "comp-exit-handler-1": {
+        "dag": {
+          "tasks": {
+            "condition-execute-3": {
+              "componentRef": {
+                "name": "comp-condition-execute-3"
+              },
+              "dependentTasks": [
+                "validate-data"
+              ],
+              "inputs": {
+                "parameters": {
+                  "pipelineparam--features_table_id": {
+                    "componentInputParameter": "pipelineparam--features_table_id"
+                  },
+                  "pipelineparam--input_table_id": {
+                    "componentInputParameter": "pipelineparam--input_table_id"
+                  },
+                  "pipelineparam--output_table_id": {
+                    "componentInputParameter": "pipelineparam--output_table_id"
+                  },
+                  "pipelineparam--path_model": {
+                    "componentInputParameter": "pipelineparam--path_model"
+                  },
+                  "pipelineparam--project": {
+                    "componentInputParameter": "pipelineparam--project"
+                  },
+                  "pipelineparam--validate-data-condition": {
+                    "taskOutputParameter": {
+                      "outputParameterKey": "condition",
+                      "producerTask": "validate-data"
+                    }
+                  }
+                }
+              },
+              "taskInfo": {
+                "name": "condition-execute-3"
+              },
+              "triggerPolicy": {
+                "condition": "inputs.parameters['pipelineparam--validate-data-condition'].string_value == 'true'"
+              }
+            },
+            "condition-no-execute-2": {
+              "componentRef": {
+                "name": "comp-condition-no-execute-2"
+              },
+              "dependentTasks": [
+                "validate-data"
+              ],
+              "inputs": {
+                "parameters": {
+                  "pipelineparam--validate-data-condition": {
+                    "taskOutputParameter": {
+                      "outputParameterKey": "condition",
+                      "producerTask": "validate-data"
+                    }
+                  }
+                }
+              },
+              "taskInfo": {
+                "name": "condition-no-execute-2"
+              },
+              "triggerPolicy": {
+                "condition": "inputs.parameters['pipelineparam--validate-data-condition'].string_value == 'false'"
+              }
+            },
+            "validate-data": {
+              "cachingOptions": {
+                "enableCache": true
+              },
+              "componentRef": {
+                "name": "comp-validate-data"
+              },
+              "inputs": {
+                "parameters": {
+                  "table": {
+                    "componentInputParameter": "pipelineparam--input_table_id"
+                  }
+                }
+              },
+              "taskInfo": {
+                "name": "Validate Data"
+              }
+            }
+          }
+        },
+        "inputDefinitions": {
+          "parameters": {
+            "pipelineparam--features_table_id": {
+              "type": "STRING"
+            },
+            "pipelineparam--input_table_id": {
+              "type": "STRING"
+            },
+            "pipelineparam--output_table_id": {
+              "type": "STRING"
+            },
+            "pipelineparam--path_model": {
+              "type": "STRING"
+            },
+            "pipelineparam--project": {
+              "type": "STRING"
+            }
+          }
+        }
+      },
+      "comp-prediction": {
+        "executorLabel": "exec-prediction",
+        "inputDefinitions": {
+          "artifacts": {
+            "features_table": {
+              "artifactType": {
+                "schemaTitle": "system.Dataset",
+                "schemaVersion": "0.0.1"
+              }
+            }
+          },
+          "parameters": {
+            "output_table_id": {
+              "type": "STRING"
+            },
+            "path_model": {
+              "type": "STRING"
+            },
+            "project": {
+              "type": "STRING"
+            }
+          }
+        },
+        "outputDefinitions": {
+          "artifacts": {
+            "output_table": {
+              "artifactType": {
+                "schemaTitle": "system.Dataset",
+                "schemaVersion": "0.0.1"
+              }
+            }
+          }
+        }
+      },
+      "comp-process-data": {
+        "executorLabel": "exec-process-data",
+        "inputDefinitions": {
+          "parameters": {
+            "features_table_id": {
+              "type": "STRING"
+            },
+            "input_table_id": {
+              "type": "STRING"
+            },
+            "project": {
+              "type": "STRING"
+            }
+          }
+        },
+        "outputDefinitions": {
+          "artifacts": {
+            "features_table": {
+              "artifactType": {
+                "schemaTitle": "system.Dataset",
+                "schemaVersion": "0.0.1"
+              }
+            }
+          }
+        }
+      },
+      "comp-validate-data": {
+        "executorLabel": "exec-validate-data",
+        "inputDefinitions": {
+          "parameters": {
+            "table": {
+              "type": "STRING"
+            }
+          }
+        },
+        "outputDefinitions": {
+          "parameters": {
+            "condition": {
+              "type": "STRING"
+            }
+          }
+        }
+      },
+      "comp-vertex-pipelines-notification-email": {
+        "executorLabel": "exec-vertex-pipelines-notification-email",
+        "inputDefinitions": {
+          "parameters": {
+            "pipeline_task_final_status": {
+              "type": "STRING"
+            },
+            "recipients": {
+              "type": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "deploymentSpec": {
+      "executors": {
+        "exec-error": {
+          "container": {
+            "args": [
+              "--executor_input",
+              "{{$}}",
+              "--function_to_execute",
+              "error"
+            ],
+            "command": [
+              "sh",
+              "-c",
+              "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet     --no-warn-script-location 'kfp==1.8.21' && \"$0\" \"$@\"\n",
+              "sh",
+              "-ec",
+              "program_path=$(mktemp -d)\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\npython3 -m kfp.v2.components.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+              "\nimport kfp\nfrom kfp.v2 import dsl\nfrom kfp.v2.dsl import *\nfrom typing import *\n\ndef error(msg: str):\n    raise RuntimeError(msg)\n\n"
+            ],
+            "image": "python:3.7"
+          }
+        },
+        "exec-prediction": {
+          "container": {
+            "args": [
+              "--executor_input",
+              "{{$}}",
+              "--function_to_execute",
+              "prediction"
+            ],
+            "command": [
+              "sh",
+              "-c",
+              "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet     --no-warn-script-location 'google-cloud-bigquery' 'google-cloud-bigquery-storage' 'pandas' 'scikit-learn' 'joblib' 'db-dtypes' 'pyarrow' 'pandas-gbq' 'google-cloud-storage' 'pytz' 'kfp==1.8.21' && \"$0\" \"$@\"\n",
+              "sh",
+              "-ec",
+              "program_path=$(mktemp -d)\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\npython3 -m kfp.v2.components.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+              "\nimport kfp\nfrom kfp.v2 import dsl\nfrom kfp.v2.dsl import *\nfrom typing import *\n\ndef prediction(\n    project: str,\n    features_table: Input[Dataset],\n    output_table_id: str,\n    output_table: Output[Dataset],\n    path_model: str,\n):\n    from datetime import datetime\n    from google.cloud import bigquery, storage\n    import joblib\n    import pandas_gbq\n    import pandas as pd\n    from pytz import timezone\n\n    TZ = timezone('America/Bogota')\n\n    def generate_datetime_created():\n        return datetime.now(TZ).replace(tzinfo=None)\n\n    client = bigquery.Client(project=project)\n    storage_client = storage.Client(project=project)\n\n    # user id de la sesi\u00f3n actual de bq\n    user_id = client.query(\"SELECT SESSION_USER()\").to_dataframe().iloc[0, 0]\n\n    features_table_id = features_table.metadata.get(\"bq_table_id\")\n\n    query = f\"SELECT * FROM `{features_table_id}`\"\n    df_features = client.query(query).to_dataframe()\n\n    bucket_name, blob_name = path_model.replace(\"gs://\", \"\").split(\"/\", 1)\n    bucket = storage_client.bucket(bucket_name)\n    blob = bucket.blob(blob_name)\n    blob.download_to_filename(\"/tmp/model.joblib\")\n    model = joblib.load(\"/tmp/model.joblib\")\n\n    predictions = model.predict(df_features)\n    df_predictions = pd.DataFrame(\n        {\n            \"prediction\": predictions,\n            \"user_id\": user_id,\n            \"datetime_created\": generate_datetime_created()\n        }\n    )\n\n    project_output = output_table_id.split(\".\")[0]\n    pandas_gbq.to_gbq(\n        df_predictions,\n        destination_table=output_table_id,\n        project_id=project_output,\n        if_exists=\"replace\"\n    )\n    output_table.uri = f\"bq://{output_table_id}\"\n    output_table.metadata[\"bq_table_id\"] = output_table_id\n    output_table.metadata[\"rows\"] = int(df_predictions.shape[0])\n\n"
+            ],
+            "image": "python:3.7"
+          }
+        },
+        "exec-process-data": {
+          "container": {
+            "args": [
+              "--executor_input",
+              "{{$}}",
+              "--function_to_execute",
+              "process_data"
+            ],
+            "command": [
+              "sh",
+              "-c",
+              "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet     --no-warn-script-location 'google-cloud-bigquery' 'google-cloud-bigquery-storage' 'pandas' 'pandas-gbq' 'db-dtypes' 'pyarrow' 'kfp==1.8.21' && \"$0\" \"$@\"\n",
+              "sh",
+              "-ec",
+              "program_path=$(mktemp -d)\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\npython3 -m kfp.v2.components.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+              "\nimport kfp\nfrom kfp.v2 import dsl\nfrom kfp.v2.dsl import *\nfrom typing import *\n\ndef process_data(\n    project: str,\n    input_table_id: str,\n    features_table_id: str,\n    features_table: Output[Dataset],\n):\n    from google.cloud import bigquery\n    import pandas_gbq\n\n    FEATURES = {\n        \"MSSubClass\",\n        \"MSZoning\",\n        \"LotArea\",\n        \"LotShape\",\n        \"LandContour\",\n        \"LotConfig\",\n        \"Neighborhood\",\n        \"OverallQual\",\n        \"OverallCond\",\n        \"YearRemodAdd\",\n        \"RoofStyle\",\n        \"Exterior1st\",\n        \"ExterQual\",\n        \"Foundation\",\n        \"BsmtQual\",\n        \"BsmtExposure\",\n        \"BsmtFinType1\",\n        \"HeatingQC\",\n        \"CentralAir\",\n        \"stFlrSF\",\n        \"ndFlrSF\",\n        \"GrLivArea\",\n        \"BsmtFullBath\",\n        \"FullBath\",\n        \"HalfBath\",\n        \"KitchenQual\",\n        \"TotRmsAbvGrd\",\n        \"Functional\",\n        \"Fireplaces\",\n        \"FireplaceQu\",\n        \"GarageFinish\",\n        \"GarageCars\",\n        \"PavedDrive\",\n        \"WoodDeckSF\",\n        \"ScreenPorch\",\n        \"SaleCondition\"\n    }\n\n    client = bigquery.Client(project=project)\n\n    query = f\"SELECT * FROM `{input_table_id}`\"\n    df = client.query(query).to_dataframe()\n\n    df = df[[col for col in df.columns if col in FEATURES]]\n    df = df.dropna()\n    df = df.reset_index(drop=True)\n\n    project_features = features_table_id.split(\".\")[0]\n    pandas_gbq.to_gbq(\n        df,\n        destination_table=features_table_id,\n        project_id=project_features,\n        if_exists=\"replace\"\n    )\n\n    features_table.uri = f\"bq://{features_table_id}\"\n    features_table.metadata[\"bq_table_id\"] = features_table_id\n    features_table.metadata[\"rows\"] = int(df.shape[0])\n\n"
+            ],
+            "image": "python:3.7"
+          }
+        },
+        "exec-validate-data": {
+          "container": {
+            "args": [
+              "--executor_input",
+              "{{$}}",
+              "--function_to_execute",
+              "validate_data"
+            ],
+            "command": [
+              "sh",
+              "-c",
+              "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet     --no-warn-script-location 'google-cloud-bigquery' 'kfp==1.8.21' && \"$0\" \"$@\"\n",
+              "sh",
+              "-ec",
+              "program_path=$(mktemp -d)\nprintf \"%s\" \"$0\" > \"$program_path/ephemeral_component.py\"\npython3 -m kfp.v2.components.executor_main                         --component_module_path                         \"$program_path/ephemeral_component.py\"                         \"$@\"\n",
+              "\nimport kfp\nfrom kfp.v2 import dsl\nfrom kfp.v2.dsl import *\nfrom typing import *\n\ndef validate_data(\n    table: str,\n) -> NamedTuple(\n    \"Outputs\",\n    [\n        (\"condition\", str)\n    ],\n):\n    from google.cloud import bigquery\n\n    client = bigquery.Client()\n\n    try:\n        client.get_table(table)\n        condition = \"true\"\n    except Exception as e:\n        condition = \"false\"\n\n    return (condition,)\n\n"
+            ],
+            "image": "python:3.7"
+          }
+        },
+        "exec-vertex-pipelines-notification-email": {
+          "container": {
+            "args": [
+              "--type",
+              "VertexNotificationEmail",
+              "--payload",
+              ""
+            ],
+            "command": [
+              "python3",
+              "-u",
+              "-m",
+              "google_cloud_pipeline_components.container.v1.vertex_notification_email.executor"
+            ],
+            "image": "gcr.io/ml-pipeline/google-cloud-pipeline-components:1.0.24"
+          }
+        }
+      }
+    },
+    "pipelineInfo": {
+      "name": "house-price-prediction"
+    },
+    "root": {
+      "dag": {
+        "tasks": {
+          "exit-handler-1": {
+            "componentRef": {
+              "name": "comp-exit-handler-1"
+            },
+            "inputs": {
+              "parameters": {
+                "pipelineparam--features_table_id": {
+                  "componentInputParameter": "features_table_id"
+                },
+                "pipelineparam--input_table_id": {
+                  "componentInputParameter": "input_table_id"
+                },
+                "pipelineparam--output_table_id": {
+                  "componentInputParameter": "output_table_id"
+                },
+                "pipelineparam--path_model": {
+                  "componentInputParameter": "path_model"
+                },
+                "pipelineparam--project": {
+                  "componentInputParameter": "project"
+                }
+              }
+            },
+            "taskInfo": {
+              "name": "Execute pipeline prediction"
+            }
+          },
+          "vertex-pipelines-notification-email": {
+            "componentRef": {
+              "name": "comp-vertex-pipelines-notification-email"
+            },
+            "dependentTasks": [
+              "exit-handler-1"
+            ],
+            "inputs": {
+              "parameters": {
+                "pipeline_task_final_status": {
+                  "taskFinalStatus": {
+                    "producerTask": "exit-handler-1"
+                  }
+                },
+                "recipients": {
+                  "runtimeValue": {
+                    "constantValue": {
+                      "stringValue": "[\"josephnicolay21@gmail.com\"]"
+                    }
+                  }
+                }
+              }
+            },
+            "taskInfo": {
+              "name": "Notification Email"
+            },
+            "triggerPolicy": {
+              "strategy": "ALL_UPSTREAM_TASKS_COMPLETED"
+            }
+          }
+        }
+      },
+      "inputDefinitions": {
+        "parameters": {
+          "features_table_id": {
+            "type": "STRING"
+          },
+          "input_table_id": {
+            "type": "STRING"
+          },
+          "output_table_id": {
+            "type": "STRING"
+          },
+          "path_model": {
+            "type": "STRING"
+          },
+          "project": {
+            "type": "STRING"
+          }
+        }
+      }
+    },
+    "schemaVersion": "2.0.0",
+    "sdkVersion": "kfp-1.8.21"
+  },
+  "runtimeConfig": {
+    "gcsOutputDirectory": "gs://process-mlops-artifacts/pipelines"
+  }
+}

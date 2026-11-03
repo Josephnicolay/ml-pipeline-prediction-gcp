@@ -78,24 +78,49 @@ terraform apply tfplan
 
 ### What gets created
 - 3 GCP projects: `source`, `process`, `production`
-- Required APIs per project (BigQuery in all; Storage, Vertex AI, Cloud Run, Cloud Scheduler in `process`)
+- Required APIs per project:
+	- In `source`: BigQuery
+	- In `production`: BigQuery
+	- In `process`: BigQuery, BigQuery Storage API, Cloud Storage, Cloud Run, Cloud Scheduler, Vertex AI, Cloud Build, Artifact Registry
 - 3 BigQuery datasets:
 	- `bq_housing_source`
 	- `bq_housing_process`
 	- `bq_housing_prod`
+- 1 BigQuery table in `source` dataset:
+	- `input_table` (configurable with `source_input_table_id`)
 - 1 GCS bucket in `process`, named `<process-project-id>-artifacts`
+- 1 Artifact Registry Docker repository in `process`:
+	- ID configurable with `artifact_registry_repository_id` (default: `test`)
 
 ### Permissions (pipeline service account)
-- In `source`: `roles/bigquery.dataViewer`
-- In `process`: `roles/bigquery.dataEditor`, `roles/bigquery.jobUser`
-- In `production`: `roles/bigquery.dataEditor`
-- On artifacts bucket: `roles/storage.objectViewer`
+- In `source` dataset (`bq_housing_source`):
+	- `roles/bigquery.dataViewer`
+- In `process` dataset (`bq_housing_process`):
+	- `roles/bigquery.dataEditor`
+- In `production` dataset (`bq_housing_prod`):
+	- `roles/bigquery.dataEditor`
+- In `process` project:
+	- `roles/bigquery.jobUser`
+	- `roles/bigquery.readSessionUser`
+	- `roles/aiplatform.user`
+- In `production` project:
+	- `roles/bigquery.jobUser`
+- On artifacts bucket (`<process-project-id>-artifacts`):
+	- `roles/storage.objectViewer`
+	- `roles/storage.objectCreator`
 
 ### Permissions (Cloud Run launcher service account)
-- In `process`: `roles/aiplatform.user`
-- On artifacts bucket: `roles/storage.objectViewer`
-- On pipeline service account: `roles/iam.serviceAccountUser`
+- In `process` project:
+	- `roles/aiplatform.user`
+- On artifacts bucket (`<process-project-id>-artifacts`):
+	- `roles/storage.objectViewer`
+- On pipeline service account:
+	- `roles/iam.serviceAccountUser`
 
-Configure both in `terraform.tfvars`:
+Notes:
+- IAM bindings are created only when service account emails are provided.
+- This Terraform configuration does not create service accounts; it only grants IAM roles.
+
+Configure these in `terraform.tfvars` (leave empty to skip related IAM bindings):
 - `pipeline_service_account_email`
 - `cloud_run_service_account_email`
