@@ -1,0 +1,35 @@
+# Pre-setup: Load input data into BigQuery
+
+PROJECT_ID=<source-project-id> DATASET_ID=<source-dataset-id> TABLE_ID=<source-table-id> uv run python src/pre-setup.py
+
+# compile the pipeline and upload it to GCS
+
+EMAIL=<user@example.com> GCS_BUCKET=<process-bucket> python src/pipeline/pipeline.py
+
+# build, deploy and execute the Cloud Run job
+
+gcloud builds submit --tag us-central1-docker.pkg.dev/<process-project-id>/<cloud-run-repo>/pipeline-job-runner:latest src/job/
+
+gcloud run jobs deploy house-price-pipeline-job \
+          --image us-central1-docker.pkg.dev/<process-project-id>/<cloud-run-repo>/pipeline-job-runner \
+          --region us-central1 \
+          --service-account cloud-run@<process-project-id>.iam.gserviceaccount.com \
+          --env-vars-file .env \
+          --quiet
+
+# (Test) execute the Cloud Run job
+
+gcloud run jobs execute house-price-pipeline-job \
+          --region us-central1
+
+
+# schedule the Cloud Run job with Cloud Scheduler
+
+gcloud scheduler jobs create http house-price-pipeline-job \
+  --location us-central1 \
+  --schedule "0 8 * * *" \
+  --time-zone "America/Lima" \
+  --uri "https://run.googleapis.com/v2/projects/<process-project-id>/locations/us-central1/jobs/house-price-pipeline-job:run" \
+  --http-method POST \
+  --oauth-service-account-email cloud-run@<process-project-id>.iam.gserviceaccount.com \
+  --oauth-token-scope "https://www.googleapis.com/auth/cloud-platform"
