@@ -114,6 +114,7 @@ terraform apply tfplan
 ### Permissions (Cloud Run launcher service account)
 - In `process` project:
 	- `roles/aiplatform.user`
+	- `roles/run.invoker`
 - On artifacts bucket (`<process-project-id>-artifacts`):
 	- `roles/storage.objectViewer`
 - On pipeline service account:

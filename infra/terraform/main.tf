@@ -207,6 +207,14 @@ resource "google_project_iam_member" "cloud_run_vertex_ai_submit_access" {
   member  = local.cloud_run_sa_member
 }
 
+resource "google_project_iam_member" "cloud_run_job_invoke_access" {
+  count = local.cloud_run_sa_enabled ? 1 : 0
+
+  project = google_project.projects["process"].project_id
+  role    = "roles/run.invoker"
+  member  = local.cloud_run_sa_member
+}
+
 resource "google_storage_bucket_iam_member" "cloud_run_artifacts_read_access" {
   count = local.cloud_run_sa_enabled ? 1 : 0
 
